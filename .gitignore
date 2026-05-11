@@ -15,8 +15,9 @@ node_modules
 # Testing
 coverage
 
-# Turbo
+# Turbo (removed)
 .turbo
+apps/
 
 # Vercel
 .vercel
