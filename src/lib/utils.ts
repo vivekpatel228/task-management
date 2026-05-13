@@ -15,6 +15,7 @@ export function formatDate(iso: string): string {
 
 export function formatRelativeDate(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
+  if (diff < 0) return 'just now'
   const seconds = Math.floor(diff / 1000)
   if (seconds < 60) return 'just now'
   const minutes = Math.floor(seconds / 60)
@@ -30,5 +31,6 @@ export function generateId(): string {
 }
 
 export function isOverdue(dueDate: string): boolean {
-  return new Date(dueDate) < new Date()
+  const today = new Date().toISOString().slice(0, 10)
+  return dueDate < today
 }
