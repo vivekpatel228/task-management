@@ -12,6 +12,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
+      setReady(false)
       router.replace(APP_ROUTES.login)
     } else {
       setReady(true)
