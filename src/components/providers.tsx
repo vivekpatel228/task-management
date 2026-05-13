@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
+import { Toaster } from 'sonner'
 import { store, persistor } from '@/store'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <TooltipProvider>
             {children}
+            <Toaster position="bottom-right" richColors />
           </TooltipProvider>
         </ThemeProvider>
       </PersistGate>
