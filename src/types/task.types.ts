@@ -29,3 +29,6 @@ export interface TaskFilters {
   labelIds?: string[]
   search?: string
 }
+
+export type Theme = 'light' | 'dark' | 'system'
+export type DefaultView = 'list' | 'board'

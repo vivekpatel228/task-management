@@ -1,7 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-
-type Theme = 'light' | 'dark' | 'system'
-type DefaultView = 'list' | 'board'
+import type { Theme, DefaultView } from '@/types'
 
 interface SettingsState {
   theme: Theme

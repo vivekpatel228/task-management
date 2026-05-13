@@ -33,12 +33,15 @@ const tasksSlice = createSlice({
     setFilters(state, action: PayloadAction<TaskFilters>) {
       state.filters = action.payload
     },
+    clearFilters(state) {
+      state.filters = {}
+    },
     setStatus(state, action: PayloadAction<TasksState['status']>) {
       state.status = action.payload
     },
   },
 })
 
-export const { setTasks, addTask, updateTask, removeTask, setFilters, setStatus } =
+export const { setTasks, addTask, updateTask, removeTask, setFilters, clearFilters, setStatus } =
   tasksSlice.actions
 export default tasksSlice.reducer
