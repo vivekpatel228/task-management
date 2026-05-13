@@ -3,6 +3,7 @@ import type { User, AuthState } from '@/types'
 
 const initialState: AuthState = {
   user: null,
+  token: null,
   isAuthenticated: false,
 }
 
