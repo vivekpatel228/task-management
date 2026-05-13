@@ -35,3 +35,9 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+docs/**
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+*.tsbuildinfo
