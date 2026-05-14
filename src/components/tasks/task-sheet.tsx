@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react'
+import { CheckIcon, ChevronsUpDownIcon, XIcon, FolderIcon } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -33,6 +33,7 @@ import {
   DEFAULT_LABELS,
 } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { useAppSelector } from '@/store/hooks'
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
@@ -41,6 +42,7 @@ const taskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high', 'urgent'] as const),
   dueDate: z.string().optional(),
   labelIds: z.array(z.string()),
+  projectId: z.string().optional(),
 })
 
 type TaskFormValues = z.infer<typeof taskSchema>
@@ -50,11 +52,14 @@ interface TaskSheetProps {
   onOpenChange: (open: boolean) => void
   task?: Task | null
   onSave: (values: TaskFormValues & { id?: string }) => void
+  defaultProjectId?: string
 }
 
-export function TaskSheet({ open, onOpenChange, task, onSave }: TaskSheetProps) {
+export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }: TaskSheetProps) {
   const isEditing = !!task
   const [labelsOpen, setLabelsOpen] = useState(false)
+
+  const projects = useAppSelector((s) => s.projects.items.filter((p) => !p.isArchived))
 
   const {
     register,
@@ -73,6 +78,7 @@ export function TaskSheet({ open, onOpenChange, task, onSave }: TaskSheetProps) 
       priority: 'medium',
       dueDate: '',
       labelIds: [],
+      projectId: defaultProjectId ?? '',
     },
   })
 
@@ -85,9 +91,10 @@ export function TaskSheet({ open, onOpenChange, task, onSave }: TaskSheetProps) 
         priority: task?.priority ?? 'medium',
         dueDate: task?.dueDate ?? '',
         labelIds: task?.labels.map((l) => l.id) ?? [],
+        projectId: task?.projectId ?? defaultProjectId ?? '',
       })
     }
-  }, [open, task, reset])
+  }, [open, task, reset, defaultProjectId])
 
   const selectedLabelIds = watch('labelIds')
 
@@ -194,6 +201,81 @@ export function TaskSheet({ open, onOpenChange, task, onSave }: TaskSheetProps) 
               />
             </div>
           </div>
+
+          {/* Project */}
+          {defaultProjectId ? (
+            (() => {
+              const lockedProject = projects.find((p) => p.id === defaultProjectId)
+              return lockedProject ? (
+                <div className="space-y-1.5">
+                  <Label>Project</Label>
+                  <div className="flex h-9 w-full items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground cursor-not-allowed select-none">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: lockedProject.color }}
+                    />
+                    <span className="font-medium text-foreground">{lockedProject.name}</span>
+                    <span className="ml-auto text-xs">Fixed</span>
+                  </div>
+                </div>
+              ) : null
+            })()
+          ) : projects.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Project</Label>
+              <Controller
+                control={control}
+                name="projectId"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ''}
+                    onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="No project">
+                        {field.value ? (
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full shrink-0"
+                              style={{
+                                backgroundColor:
+                                  projects.find((p) => p.id === field.value)?.color,
+                              }}
+                            />
+                            {projects.find((p) => p.id === field.value)?.name}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <FolderIcon className="h-3.5 w-3.5" />
+                            No project
+                          </span>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <FolderIcon className="h-3.5 w-3.5" />
+                          No project
+                        </span>
+                      </SelectItem>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: p.color }}
+                            />
+                            {p.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
 
           {/* Due Date */}
           <div className="space-y-1.5">

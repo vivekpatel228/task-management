@@ -1,8 +1,15 @@
+export type ProjectStatus = 'active' | 'on_hold' | 'completed' | 'cancelled'
+
 export interface Project {
   id: string
   name: string
   color: string
-  taskCount?: number
+  description?: string
+  status: ProjectStatus
+  deadline?: string
+  isArchived: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export type Priority = 'low' | 'medium' | 'high' | 'urgent'

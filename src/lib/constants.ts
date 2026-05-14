@@ -1,7 +1,7 @@
-import type { Priority, Status, Label, SortField } from '@/types'
+import type { Priority, Status, Label, SortField, ProjectStatus } from '@/types'
 
 export const APP_NAME = 'TaskFlow'
-export const PERSIST_KEY = 'taskflow-root'
+export const PERSIST_KEY = 'taskflow-root-v2'
 
 export const APP_ROUTES = {
   home: '/',
@@ -66,3 +66,30 @@ export const PRIORITY_ORDER: Record<Priority, number> = {
   medium: 2,
   low: 3,
 }
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: 'Active',
+  on_hold: 'On Hold',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+}
+
+export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
+  active: '#3b82f6',
+  on_hold: '#f59e0b',
+  completed: '#10b981',
+  cancelled: '#6b7280',
+}
+
+export const PROJECT_COLORS = [
+  '#6366f1',
+  '#3b82f6',
+  '#06b6d4',
+  '#10b981',
+  '#84cc16',
+  '#f59e0b',
+  '#f97316',
+  '#ef4444',
+  '#ec4899',
+  '#8b5cf6',
+]

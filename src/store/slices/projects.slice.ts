@@ -6,12 +6,7 @@ interface ProjectsState {
 }
 
 const initialState: ProjectsState = {
-  items: [
-    { id: '1', name: 'Website Redesign', color: '#6366f1' },
-    { id: '2', name: 'Mobile App', color: '#f59e0b' },
-    { id: '3', name: 'API Integration', color: '#10b981' },
-    { id: '4', name: 'Marketing Campaign', color: '#ef4444' },
-  ],
+  items: [],
 }
 
 const projectsSlice = createSlice({
@@ -22,13 +17,38 @@ const projectsSlice = createSlice({
       state.items = action.payload
     },
     addProject(state, action: PayloadAction<Project>) {
-      state.items.push(action.payload)
+      state.items.unshift(action.payload)
+    },
+    updateProject(state, action: PayloadAction<Project>) {
+      const index = state.items.findIndex((p) => p.id === action.payload.id)
+      if (index !== -1) state.items[index] = action.payload
     },
     removeProject(state, action: PayloadAction<string>) {
       state.items = state.items.filter((p) => p.id !== action.payload)
     },
+    archiveProject(state, action: PayloadAction<string>) {
+      const project = state.items.find((p) => p.id === action.payload)
+      if (project) {
+        project.isArchived = true
+        project.updatedAt = new Date().toISOString()
+      }
+    },
+    unarchiveProject(state, action: PayloadAction<string>) {
+      const project = state.items.find((p) => p.id === action.payload)
+      if (project) {
+        project.isArchived = false
+        project.updatedAt = new Date().toISOString()
+      }
+    },
   },
 })
 
-export const { setProjects, addProject, removeProject } = projectsSlice.actions
+export const {
+  setProjects,
+  addProject,
+  updateProject,
+  removeProject,
+  archiveProject,
+  unarchiveProject,
+} = projectsSlice.actions
 export default projectsSlice.reducer

@@ -28,6 +28,7 @@ function buildTask(values: {
   priority: Task['priority']
   dueDate?: string
   labelIds: string[]
+  projectId?: string
 }, existing?: Task | null): Task {
   const now = new Date().toISOString()
   const labels = values.labelIds
@@ -42,6 +43,7 @@ function buildTask(values: {
     priority: values.priority,
     labels,
     dueDate: values.dueDate || undefined,
+    projectId: values.projectId || undefined,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
