@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch } from '@/store/hooks'
-import { setUser, setToken } from '@/store/slices/auth.slice'
+import { login } from '@/store/slices/auth.slice'
 import { findUserByEmail, saveAuthToken } from '@/lib/auth'
 import { APP_ROUTES } from '@/lib/constants'
 
@@ -33,7 +33,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) })
 
-  function onSubmit(data: LoginValues) {
+  async function onSubmit(data: LoginValues) {
     const stored = findUserByEmail(data.email)
     if (!stored) {
       toast.error('No account with that email')
@@ -45,15 +45,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     }
     const token = crypto.randomUUID()
     dispatch(
-      setUser({
-        id: stored.id,
-        name: stored.name,
-        email: stored.email,
-        avatarUrl: stored.avatarUrl,
-        createdAt: stored.createdAt,
+      login({
+        user: {
+          id: stored.id,
+          name: stored.name,
+          email: stored.email,
+          avatarUrl: stored.avatarUrl,
+          createdAt: stored.createdAt,
+        },
+        token,
       }),
     )
-    dispatch(setToken(token))
     saveAuthToken(token)
     toast.success(`Welcome back, ${stored.name}!`)
     router.replace(APP_ROUTES.dashboard)

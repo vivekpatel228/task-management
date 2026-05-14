@@ -12,13 +12,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAppDispatch } from '@/store/hooks'
-import { setUser, setToken } from '@/store/slices/auth.slice'
+import { login } from '@/store/slices/auth.slice'
 import { getUsers, saveUsers, findUserByEmail, saveAuthToken } from '@/lib/auth'
 import { APP_ROUTES } from '@/lib/constants'
 
 const registerSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().trim().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
@@ -40,8 +40,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
     formState: { errors, isSubmitting },
   } = useForm<RegisterValues>({ resolver: zodResolver(registerSchema) })
 
-  function onSubmit(data: RegisterValues) {
-    if (findUserByEmail(data.email)) {
+  async function onSubmit(data: RegisterValues) {
+    const email = data.email.toLowerCase()
+    if (findUserByEmail(email)) {
       toast.error('Email already in use')
       return
     }
@@ -49,10 +50,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
     const createdAt = new Date().toISOString()
     const token = crypto.randomUUID()
     const users = getUsers()
-    users.push({ id, name: data.name, email: data.email, password: data.password, createdAt })
+    users.push({ id, name: data.name, email, password: data.password, createdAt })
     saveUsers(users)
-    dispatch(setUser({ id, name: data.name, email: data.email, createdAt }))
-    dispatch(setToken(token))
+    dispatch(login({ user: { id, name: data.name, email, createdAt }, token }))
     saveAuthToken(token)
     toast.success('Account created!')
     router.replace(APP_ROUTES.dashboard)
