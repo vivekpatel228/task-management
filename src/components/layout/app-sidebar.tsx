@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import {
   LayoutDashboardIcon,
   CheckSquareIcon,
@@ -10,11 +10,10 @@ import {
   Settings2Icon,
   HelpCircleIcon,
   ClipboardListIcon,
-} from "lucide-react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+} from 'lucide-react'
+import { NavMain } from '@/components/nav-main'
+import { NavSecondary } from '@/components/nav-secondary'
+import { NavUser } from '@/components/nav-user'
 import {
   Sidebar,
   SidebarContent,
@@ -23,58 +22,32 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { APP_ROUTES, APP_NAME } from "@/lib/constants"
+} from '@/components/ui/sidebar'
+import { APP_ROUTES, APP_NAME } from '@/lib/constants'
+import { useAppSelector } from '@/store/hooks'
 
 const navMain = [
-  {
-    title: "Dashboard",
-    url: APP_ROUTES.dashboard,
-    icon: <LayoutDashboardIcon />,
-    isActive: true,
-  },
-  {
-    title: "My Tasks",
-    url: APP_ROUTES.tasks,
-    icon: <CheckSquareIcon />,
-  },
-  {
-    title: "Projects",
-    url: "#",
-    icon: <FolderIcon />,
-  },
-  {
-    title: "Board",
-    url: "#",
-    icon: <KanbanIcon />,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: <CalendarIcon />,
-  },
+  { title: 'Dashboard', url: APP_ROUTES.dashboard, icon: <LayoutDashboardIcon />, isActive: true },
+  { title: 'My Tasks', url: APP_ROUTES.tasks, icon: <CheckSquareIcon /> },
+  { title: 'Projects', url: '#', icon: <FolderIcon /> },
+  { title: 'Board', url: '#', icon: <KanbanIcon /> },
+  { title: 'Calendar', url: '#', icon: <CalendarIcon /> },
 ]
 
 const navSecondary = [
-  {
-    title: "Settings",
-    url: APP_ROUTES.settings,
-    icon: <Settings2Icon />,
-  },
-  {
-    title: "Help",
-    url: "#",
-    icon: <HelpCircleIcon />,
-  },
+  { title: 'Settings', url: APP_ROUTES.settings, icon: <Settings2Icon /> },
+  { title: 'Help', url: '#', icon: <HelpCircleIcon /> },
 ]
 
-const user = {
-  name: "Guest User",
-  email: "guest@taskflow.app",
-  avatar: "",
-}
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useAppSelector((state) => state.auth.user)
+
+  const navUser = {
+    name: user?.name ?? 'Guest',
+    email: user?.email ?? '',
+    avatar: user?.avatarUrl ?? '',
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -99,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={navUser} />
       </SidebarFooter>
     </Sidebar>
   )
