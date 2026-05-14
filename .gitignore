@@ -15,8 +15,9 @@ node_modules
 # Testing
 coverage
 
-# Turbo
+# Turbo (removed)
 .turbo
+apps/
 
 # Vercel
 .vercel
@@ -34,3 +35,9 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+docs/**
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+*.tsbuildinfo

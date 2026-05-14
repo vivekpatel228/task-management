@@ -1,0 +1,39 @@
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import type { Theme, DefaultView } from '@/types'
+
+interface SettingsState {
+  theme: Theme
+  defaultView: DefaultView
+  colorScheme: string
+  notificationsEnabled: boolean
+}
+
+const initialState: SettingsState = {
+  theme: 'system',
+  defaultView: 'list',
+  colorScheme: 'neutral',
+  notificationsEnabled: true,
+}
+
+const settingsSlice = createSlice({
+  name: 'settings',
+  initialState,
+  reducers: {
+    setTheme(state, action: PayloadAction<Theme>) {
+      state.theme = action.payload
+    },
+    setDefaultView(state, action: PayloadAction<DefaultView>) {
+      state.defaultView = action.payload
+    },
+    setColorScheme(state, action: PayloadAction<string>) {
+      state.colorScheme = action.payload
+    },
+    setNotificationsEnabled(state, action: PayloadAction<boolean>) {
+      state.notificationsEnabled = action.payload
+    },
+  },
+})
+
+export const { setTheme, setDefaultView, setColorScheme, setNotificationsEnabled } =
+  settingsSlice.actions
+export default settingsSlice.reducer
