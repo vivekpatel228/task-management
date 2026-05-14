@@ -37,5 +37,13 @@ export interface TaskFilters {
   search?: string
 }
 
+export type SortField = 'createdAt' | 'dueDate' | 'priority' | 'title' | 'status'
+export type SortOrder = 'asc' | 'desc'
+
+export interface TaskSort {
+  field: SortField
+  order: SortOrder
+}
+
 export type Theme = 'light' | 'dark' | 'system'
 export type DefaultView = 'list' | 'board'

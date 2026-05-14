@@ -1,2 +1,2 @@
-export type { Priority, Status, ActiveView, Label, Task, TaskFilters, Theme, DefaultView, Project } from './task.types'
+export type { Priority, Status, ActiveView, Label, Task, TaskFilters, SortField, SortOrder, TaskSort, Theme, DefaultView, Project } from './task.types'
 export type { User, StoredUser, AuthState } from './auth.types'
