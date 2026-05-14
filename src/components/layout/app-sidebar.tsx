@@ -5,13 +5,10 @@ import {
   LayoutDashboardIcon,
   CheckSquareIcon,
   FolderIcon,
-  Settings2Icon,
-  HelpCircleIcon,
   ClipboardListIcon,
 } from 'lucide-react'
 import { NavMain } from '@/components/nav-main'
 import { NavProjects } from '@/components/nav-projects'
-import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import {
   Sidebar,
@@ -29,11 +26,6 @@ const navMain = [
   { title: 'Dashboard', url: APP_ROUTES.dashboard, icon: <LayoutDashboardIcon /> },
   { title: 'Tasks', url: APP_ROUTES.tasks, icon: <CheckSquareIcon /> },
   { title: 'Projects', url: APP_ROUTES.projects, icon: <FolderIcon /> },
-]
-
-const navSecondary = [
-  { title: 'Settings', url: APP_ROUTES.settings, icon: <Settings2Icon /> },
-  { title: 'Help', url: '#', icon: <HelpCircleIcon /> },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -68,7 +60,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={navMain} />
         <NavProjects projects={projects} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={navUser} />

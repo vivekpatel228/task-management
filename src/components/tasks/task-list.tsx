@@ -17,8 +17,9 @@ import {
   setFilters,
   setSort,
 } from '@/store/slices/tasks.slice'
-import type { Task, TaskFilters, TaskSort, Priority } from '@/types'
-import { DEFAULT_LABELS, PRIORITY_ORDER } from '@/lib/constants'
+import type { Subtask, Task, TaskFilters, TaskSort } from '@/types'
+import { DEFAULT_LABELS } from '@/lib/constants'
+import { applyFilters, applySort } from '@/lib/task-utils'
 
 function buildTask(values: {
   id?: string
@@ -29,6 +30,7 @@ function buildTask(values: {
   dueDate?: string
   labelIds: string[]
   projectId?: string
+  subtasks?: Subtask[]
 }, existing?: Task | null): Task {
   const now = new Date().toISOString()
   const labels = values.labelIds
@@ -44,61 +46,16 @@ function buildTask(values: {
     labels,
     dueDate: values.dueDate || undefined,
     projectId: values.projectId || undefined,
+    subtasks: values.subtasks ?? existing?.subtasks ?? [],
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
 }
 
-function applyFilters(tasks: Task[], filters: TaskFilters): Task[] {
-  return tasks.filter((task) => {
-    if (filters.search) {
-      const q = filters.search.toLowerCase()
-      if (
-        !task.title.toLowerCase().includes(q) &&
-        !task.description?.toLowerCase().includes(q)
-      ) {
-        return false
-      }
-    }
-    if (filters.status?.length && !filters.status.includes(task.status)) return false
-    if (filters.priority?.length && !filters.priority.includes(task.priority)) return false
-    if (filters.labelIds?.length) {
-      const taskLabelIds = task.labels.map((l) => l.id)
-      if (!filters.labelIds.some((id) => taskLabelIds.includes(id))) return false
-    }
-    return true
-  })
-}
-
-function applySort(tasks: Task[], sort: TaskSort): Task[] {
-  return [...tasks].sort((a, b) => {
-    let cmp = 0
-    switch (sort.field) {
-      case 'title':
-        cmp = a.title.localeCompare(b.title)
-        break
-      case 'priority':
-        cmp = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
-        break
-      case 'status': {
-        const order = ['todo', 'in_progress', 'in_review', 'done']
-        cmp = order.indexOf(a.status) - order.indexOf(b.status)
-        break
-      }
-      case 'dueDate':
-        cmp = (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999')
-        break
-      case 'createdAt':
-        cmp = a.createdAt.localeCompare(b.createdAt)
-        break
-    }
-    return sort.order === 'asc' ? cmp : -cmp
-  })
-}
 
 export function TaskList() {
   const dispatch = useAppDispatch()
-  const tasks = useAppSelector((s) => s.tasks.items)
+  const allTasks = useAppSelector((s) => s.tasks.items)
   const filters = useAppSelector((s) => s.tasks.filters)
   const sort = useAppSelector((s) => s.tasks.sort ?? { field: 'createdAt' as const, order: 'desc' as const })
 
@@ -106,7 +63,10 @@ export function TaskList() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filteredTasks = useMemo(() => applySort(applyFilters(tasks, filters), sort), [tasks, filters, sort])
+  // Personal tasks only — project tasks live on their project page
+  const personalTasks = useMemo(() => allTasks.filter((t) => !t.projectId), [allTasks])
+
+  const filteredTasks = useMemo(() => applySort(applyFilters(personalTasks, filters), sort), [personalTasks, filters, sort])
 
   const hasFilters = !!(
     filters.search ||
@@ -141,7 +101,7 @@ export function TaskList() {
     }
   }
 
-  const taskToDelete = tasks.find((t) => t.id === deleteId)
+  const taskToDelete = personalTasks.find((t) => t.id === deleteId)
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -150,7 +110,7 @@ export function TaskList() {
         <div>
           <h1 className="text-xl font-semibold">My Tasks</h1>
           <p className="text-sm text-muted-foreground">
-            {tasks.length} task{tasks.length !== 1 ? 's' : ''} total
+            {personalTasks.length} task{personalTasks.length !== 1 ? 's' : ''} total
           </p>
         </div>
         <Button onClick={openCreate} size="sm" className="gap-2 shrink-0">
@@ -191,6 +151,7 @@ export function TaskList() {
         onOpenChange={setSheetOpen}
         task={editingTask}
         onSave={handleSave}
+        hideProjectPicker
       />
 
       {/* Delete confirmation */}

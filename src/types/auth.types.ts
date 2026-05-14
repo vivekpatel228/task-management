@@ -3,6 +3,7 @@ export interface User {
   name: string
   email: string
   avatarUrl?: string
+  bio?: string
   createdAt: string
 }
 
@@ -12,6 +13,7 @@ export interface StoredUser {
   email: string
   password: string
   avatarUrl?: string
+  bio?: string
   createdAt: string
 }
 

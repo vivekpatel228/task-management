@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { Task, TaskFilters, TaskSort } from '@/types'
+import type { Subtask, Task, TaskFilters, TaskSort } from '@/types'
 
 interface TasksState {
   items: Task[]
@@ -54,6 +54,33 @@ const tasksSlice = createSlice({
     setStatus(state, action: PayloadAction<TasksState['status']>) {
       state.status = action.payload
     },
+    addSubtask(state, action: PayloadAction<{ taskId: string; subtask: Subtask }>) {
+      const task = state.items.find((t) => t.id === action.payload.taskId)
+      if (!task) return
+      if (!task.subtasks) task.subtasks = []
+      task.subtasks.push(action.payload.subtask)
+      task.updatedAt = new Date().toISOString()
+    },
+    toggleSubtask(state, action: PayloadAction<{ taskId: string; subtaskId: string }>) {
+      const task = state.items.find((t) => t.id === action.payload.taskId)
+      if (!task) return
+      const subtask = task.subtasks?.find((s) => s.id === action.payload.subtaskId)
+      if (!subtask) return
+      subtask.completed = !subtask.completed
+      task.updatedAt = new Date().toISOString()
+      const allDone = task.subtasks.length > 0 && task.subtasks.every((s) => s.completed)
+      if (allDone && task.status !== 'done') {
+        task.status = 'done'
+      } else if (!allDone && task.status === 'done') {
+        task.status = 'in_progress'
+      }
+    },
+    removeSubtask(state, action: PayloadAction<{ taskId: string; subtaskId: string }>) {
+      const task = state.items.find((t) => t.id === action.payload.taskId)
+      if (!task) return
+      task.subtasks = task.subtasks?.filter((s) => s.id !== action.payload.subtaskId) ?? []
+      task.updatedAt = new Date().toISOString()
+    },
   },
 })
 
@@ -68,5 +95,8 @@ export const {
   clearFilters,
   setSort,
   setStatus,
+  addSubtask,
+  toggleSubtask,
+  removeSubtask,
 } = tasksSlice.actions
 export default tasksSlice.reducer

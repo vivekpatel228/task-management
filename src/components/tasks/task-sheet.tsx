@@ -1,10 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CheckIcon, ChevronsUpDownIcon, XIcon, FolderIcon } from 'lucide-react'
+import {
+  CheckIcon,
+  ChevronsUpDownIcon,
+  PlusIcon,
+  Trash2Icon,
+  XIcon,
+  FolderIcon,
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -18,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -26,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import type { Task, Priority, Status, Label as LabelType } from '@/types'
+import type { Priority, Status, Subtask, Task } from '@/types'
 import {
   PRIORITY_LABELS,
   STATUS_LABELS,
@@ -51,13 +59,19 @@ interface TaskSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task?: Task | null
-  onSave: (values: TaskFormValues & { id?: string }) => void
+  onSave: (values: TaskFormValues & { id?: string; subtasks: Subtask[] }) => void
   defaultProjectId?: string
+  hideProjectPicker?: boolean
 }
 
-export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }: TaskSheetProps) {
+export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId, hideProjectPicker }: TaskSheetProps) {
   const isEditing = !!task
   const [labelsOpen, setLabelsOpen] = useState(false)
+
+  // Subtasks are managed outside react-hook-form to keep the form schema clean
+  const [subtasks, setSubtasks] = useState<Subtask[]>([])
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
+  const subtaskInputRef = useRef<HTMLInputElement>(null)
 
   const projects = useAppSelector((s) => s.projects.items.filter((p) => !p.isArchived))
 
@@ -93,6 +107,8 @@ export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }
         labelIds: task?.labels.map((l) => l.id) ?? [],
         projectId: task?.projectId ?? defaultProjectId ?? '',
       })
+      setSubtasks(task?.subtasks ?? [])
+      setNewSubtaskTitle('')
     }
   }, [open, task, reset, defaultProjectId])
 
@@ -107,13 +123,41 @@ export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }
     )
   }
 
+  function addSubtaskFromSheet() {
+    const title = newSubtaskTitle.trim()
+    if (!title) return
+    setSubtasks((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        title,
+        completed: false,
+        createdAt: new Date().toISOString(),
+      },
+    ])
+    setNewSubtaskTitle('')
+    subtaskInputRef.current?.focus()
+  }
+
+  function toggleSubtaskInSheet(id: string) {
+    setSubtasks((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, completed: !s.completed } : s)),
+    )
+  }
+
+  function removeSubtaskFromSheet(id: string) {
+    setSubtasks((prev) => prev.filter((s) => s.id !== id))
+  }
+
   function onSubmit(values: TaskFormValues) {
-    onSave({ ...values, id: task?.id })
+    onSave({ ...values, id: task?.id, subtasks })
     onOpenChange(false)
   }
 
   const priorities: Priority[] = ['low', 'medium', 'high', 'urgent']
   const statuses: Status[] = ['todo', 'in_progress', 'in_review', 'done']
+
+  const completedCount = subtasks.filter((s) => s.completed).length
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -203,7 +247,7 @@ export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }
           </div>
 
           {/* Project */}
-          {defaultProjectId ? (
+          {!hideProjectPicker && defaultProjectId ? (
             (() => {
               const lockedProject = projects.find((p) => p.id === defaultProjectId)
               return lockedProject ? (
@@ -220,7 +264,7 @@ export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }
                 </div>
               ) : null
             })()
-          ) : projects.length > 0 && (
+          ) : !hideProjectPicker && projects.length > 0 && (
             <div className="space-y-1.5">
               <Label>Project</Label>
               <Controller
@@ -347,6 +391,78 @@ export function TaskSheet({ open, onOpenChange, task, onSave, defaultProjectId }
                 })}
               </div>
             )}
+          </div>
+
+          {/* Subtasks */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Subtasks</Label>
+              {subtasks.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {completedCount}/{subtasks.length} done
+                </span>
+              )}
+            </div>
+
+            {subtasks.length > 0 && (
+              <div className="space-y-1 rounded-md border p-2">
+                {subtasks.map((subtask) => (
+                  <div key={subtask.id} className="group/st flex items-center gap-2 rounded px-1 py-1">
+                    <Checkbox
+                      checked={subtask.completed}
+                      onCheckedChange={() => toggleSubtaskInSheet(subtask.id)}
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
+                    <span
+                      className={cn(
+                        'flex-1 text-sm leading-snug',
+                        subtask.completed && 'line-through text-muted-foreground',
+                      )}
+                    >
+                      {subtask.title}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover/st:opacity-100"
+                      onClick={() => removeSubtaskFromSheet(subtask.id)}
+                    >
+                      <Trash2Icon className="h-3.5 w-3.5" />
+                      <span className="sr-only">Remove subtask</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add subtask input */}
+            <div className="flex items-center gap-2">
+              <Input
+                ref={subtaskInputRef}
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addSubtaskFromSheet()
+                  }
+                }}
+                placeholder="Add a subtask…"
+                className="h-8 text-sm"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={addSubtaskFromSheet}
+                disabled={!newSubtaskTitle.trim()}
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                <span className="sr-only">Add subtask</span>
+              </Button>
+            </div>
           </div>
         </form>
 

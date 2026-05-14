@@ -11,6 +11,7 @@ export const APP_ROUTES = {
   tasks: '/tasks',
   projects: '/projects',
   projectDetail: (id: string) => `/projects/${id}`,
+  profile: '/profile',
   settings: '/settings',
 } as const
 

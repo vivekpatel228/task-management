@@ -22,6 +22,13 @@ export interface Label {
   color: string
 }
 
+export interface Subtask {
+  id: string
+  title: string
+  completed: boolean
+  createdAt: string
+}
+
 export interface Task {
   id: string
   title: string
@@ -34,6 +41,7 @@ export interface Task {
   createdAt: string
   updatedAt: string
   projectId?: string
+  subtasks: Subtask[]
 }
 
 export interface TaskFilters {

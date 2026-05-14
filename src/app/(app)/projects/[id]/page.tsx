@@ -20,6 +20,7 @@ import { TaskCard } from '@/components/tasks/task-card'
 import { TaskSheet } from '@/components/tasks/task-sheet'
 import { TaskDeleteDialog } from '@/components/tasks/task-delete-dialog'
 import { TaskEmptyState } from '@/components/tasks/task-empty-state'
+import { TaskFiltersBar } from '@/components/tasks/task-filters'
 import { ProjectDialog } from '@/components/projects/project-dialog'
 import { ProjectArchiveDialog } from '@/components/projects/project-archive-dialog'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
@@ -34,8 +35,9 @@ import {
   archiveProject,
   unarchiveProject,
 } from '@/store/slices/projects.slice'
-import type { Task, Project } from '@/types'
+import type { Subtask, Task, Project, TaskFilters, TaskSort } from '@/types'
 import { PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS, DEFAULT_LABELS, APP_ROUTES } from '@/lib/constants'
+import { applyFilters, applySort } from '@/lib/task-utils'
 import { cn } from '@/lib/utils'
 
 function buildTask(
@@ -48,6 +50,7 @@ function buildTask(
     dueDate?: string
     labelIds: string[]
     projectId?: string
+    subtasks?: Subtask[]
   },
   existing?: Task | null,
   projectId?: string,
@@ -66,6 +69,7 @@ function buildTask(
     labels,
     dueDate: values.dueDate || undefined,
     projectId: values.projectId ?? projectId,
+    subtasks: values.subtasks ?? existing?.subtasks ?? [],
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
@@ -112,10 +116,24 @@ export default function ProjectDetailPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
+  const [filters, setFilters] = useState<TaskFilters>({})
+  const [sort, setSort] = useState<TaskSort>({ field: 'createdAt', order: 'desc' })
 
   const projectTasks = useMemo(
     () => allTasks.filter((t) => t.projectId === id),
     [allTasks, id],
+  )
+
+  const filteredTasks = useMemo(
+    () => applySort(applyFilters(projectTasks, filters), sort),
+    [projectTasks, filters, sort],
+  )
+
+  const hasFilters = !!(
+    filters.search ||
+    filters.status?.length ||
+    filters.priority?.length ||
+    filters.labelIds?.length
   )
 
   const taskStats = useMemo(() => {
@@ -305,12 +323,19 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Task list */}
-      <div className="flex-1 p-4 sm:p-6">
-        {projectTasks.length === 0 ? (
-          <TaskEmptyState hasFilters={false} onNewTask={openCreate} />
+      <div className="flex-1 space-y-4 p-4 sm:p-6">
+        <TaskFiltersBar
+          filters={filters}
+          sort={sort}
+          onFiltersChange={setFilters}
+          onSortChange={setSort}
+        />
+
+        {filteredTasks.length === 0 ? (
+          <TaskEmptyState hasFilters={hasFilters} onNewTask={openCreate} />
         ) : (
           <div className="space-y-2">
-            {projectTasks.map((task) => (
+            {filteredTasks.map((task) => (
               <TaskCard
                 key={task.id}
                 task={task}
