@@ -9,6 +9,8 @@ export const APP_ROUTES = {
   signup: '/signup',
   dashboard: '/dashboard',
   tasks: '/tasks',
+  projects: '/projects',
+  projectDetail: (id: string) => `/projects/${id}`,
   settings: '/settings',
 } as const
 

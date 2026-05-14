@@ -5,13 +5,12 @@ import {
   LayoutDashboardIcon,
   CheckSquareIcon,
   FolderIcon,
-  KanbanIcon,
-  CalendarIcon,
   Settings2Icon,
   HelpCircleIcon,
   ClipboardListIcon,
 } from 'lucide-react'
 import { NavMain } from '@/components/nav-main'
+import { NavProjects } from '@/components/nav-projects'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import {
@@ -27,11 +26,9 @@ import { APP_ROUTES, APP_NAME } from '@/lib/constants'
 import { useAppSelector } from '@/store/hooks'
 
 const navMain = [
-  { title: 'Dashboard', url: APP_ROUTES.dashboard, icon: <LayoutDashboardIcon />, isActive: true },
-  { title: 'My Tasks', url: APP_ROUTES.tasks, icon: <CheckSquareIcon /> },
-  { title: 'Projects', url: '#', icon: <FolderIcon /> },
-  { title: 'Board', url: '#', icon: <KanbanIcon /> },
-  { title: 'Calendar', url: '#', icon: <CalendarIcon /> },
+  { title: 'Dashboard', url: APP_ROUTES.dashboard, icon: <LayoutDashboardIcon /> },
+  { title: 'Tasks', url: APP_ROUTES.tasks, icon: <CheckSquareIcon /> },
+  { title: 'Projects', url: APP_ROUTES.projects, icon: <FolderIcon /> },
 ]
 
 const navSecondary = [
@@ -41,6 +38,7 @@ const navSecondary = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAppSelector((state) => state.auth.user)
+  const projects = useAppSelector((state) => state.projects.items)
 
   const navUser = {
     name: user?.name ?? 'Guest',
@@ -69,6 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
+        <NavProjects projects={projects} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

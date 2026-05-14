@@ -2,6 +2,7 @@
 
 import { Fragment } from "react"
 import { usePathname } from "next/navigation"
+import { useAppSelector } from "@/store/hooks"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -14,12 +15,6 @@ import {
 } from "@/components/ui/breadcrumb"
 import { APP_ROUTES } from "@/lib/constants"
 
-const ROUTE_LABELS: Record<string, string> = {
-  [APP_ROUTES.dashboard]: "Dashboard",
-  [APP_ROUTES.tasks]: "My Tasks",
-  [APP_ROUTES.settings]: "Settings",
-}
-
 interface BreadcrumbSegment {
   label: string
   href?: string
@@ -31,10 +26,32 @@ interface AppHeaderProps {
 
 export function AppHeader({ segments }: AppHeaderProps) {
   const pathname = usePathname()
+  const projects = useAppSelector((state) => state.projects.items)
 
-  const resolvedSegments: BreadcrumbSegment[] = segments ?? [
-    { label: ROUTE_LABELS[pathname] ?? "Page" },
-  ]
+  function resolveSegments(): BreadcrumbSegment[] {
+    if (segments) return segments
+
+    const projectDetailMatch = pathname.match(/^\/projects\/(.+)$/)
+    if (projectDetailMatch) {
+      const id = projectDetailMatch[1]
+      const project = projects.find((p) => p.id === id)
+      return [
+        { label: "Projects", href: APP_ROUTES.projects },
+        { label: project?.name ?? "Project" },
+      ]
+    }
+
+    const staticLabels: Record<string, string> = {
+      [APP_ROUTES.dashboard]: "Dashboard",
+      [APP_ROUTES.tasks]: "Tasks",
+      [APP_ROUTES.projects]: "Projects",
+      [APP_ROUTES.settings]: "Settings",
+    }
+
+    return [{ label: staticLabels[pathname] ?? "Page" }]
+  }
+
+  const resolvedSegments = resolveSegments()
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 px-4">

@@ -1,3 +1,10 @@
+export interface Project {
+  id: string
+  name: string
+  color: string
+  taskCount?: number
+}
+
 export type Priority = 'low' | 'medium' | 'high' | 'urgent'
 export type Status = 'todo' | 'in_progress' | 'in_review' | 'done'
 export type ActiveView = 'list' | 'board' | 'calendar'
