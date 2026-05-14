@@ -1,18 +1,25 @@
-import { Button } from "@/components/ui/button"
+'use client'
 
-export default function Page() {
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAppSelector } from '@/store/hooks'
+import { APP_ROUTES } from '@/lib/constants'
+
+export default function RootPage() {
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(APP_ROUTES.dashboard)
+    } else {
+      router.replace(APP_ROUTES.login)
+    }
+  }, [isAuthenticated, router])
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="text-muted-foreground font-mono text-xs">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
+    <div className="flex min-h-svh items-center justify-center">
+      <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
     </div>
   )
 }
